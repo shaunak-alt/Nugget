@@ -30,10 +30,3 @@ Wrap-up:
 1. Return to the original PowerShell window and run .\scripts\stop-all.ps1
 2. docker compose down mongo_logs mongo_meta
 3. Close any leftover terminals once everything stops.
-
-
-//Do not touch the below part
-docker exec -i api-monitoring-mongo-logs mongosh ... << script
-• 6755c5a0cafe000000000001 → latency 1400 ms (slow-path)
-• 6755c5a0cafe000000000002 → status 502 (broken-endpoint)
-• 6755c5a0cafe000000000003 → rateLimitHit true (rate-limit)
