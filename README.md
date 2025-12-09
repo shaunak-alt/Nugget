@@ -97,8 +97,3 @@ docker-compose.yml   # End-to-end orchestration
 - When the dashboard loads, authenticate with the default admin account (`admin` / `admin`). Use the UI to confirm metrics tiles render and rate-limit flags surface when you post logs via the sample service.
 - Ensure the collector has a strong JWT secret before launching (`setx JWT_SECRET your-32-char-secret` on Windows PowerShell, or add it to your `.env`).
 - CI runs Playwright smoke tests via `.github/workflows/e2e.yml`; replicate locally with `npm run test:e2e` after executing `npx playwright install` once.
-
-## Next Steps
-- Restore a dedicated ingestion client with `ROLE_INGESTOR` credentials so scripted traffic can flow through `/logs` instead of direct Mongo inserts.
-- Promote the `start-all.ps1` experience into GitHub Actions for one-click preview environments.
-- Finalize Kubernetes manifests, alert routing, and observability wiring outlined in `docs/operations-runbook.md` and `docs/observability.md`.
