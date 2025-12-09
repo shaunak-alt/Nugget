@@ -1,0 +1,28 @@
+# Gradle artifacts
+.gradle/
+**/build/
+!gradle/wrapper.jar
+
+# Node outputs
+**/node_modules/
+**/.next/
+**/out/
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.production
+
+# IDE and editor settings
+.idea/
+*.iml
+.vscode/
+
+# Logs and temp files
+*.log
+*.tmp
+
+# OS metadata
+.DS_Store
+Thumbs.db

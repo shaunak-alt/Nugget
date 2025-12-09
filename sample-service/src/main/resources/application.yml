@@ -1,0 +1,20 @@
+server:
+  port: ${SAMPLE_SERVICE_PORT:8090}
+
+spring:
+  application:
+    name: sample-service
+  main:
+    banner-mode: off
+
+logging:
+  level:
+    root: INFO
+
+tracking:
+  service-name: sample-service
+  collector:
+    base-url: ${COLLECTOR_BASE_URL:http://collector-service:8080}
+    endpoint: /logs
+  rate-limiter:
+    requests-per-second: 100

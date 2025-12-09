@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  mongo_logs:
+    image: mongo:7
+    container_name: api-monitoring-mongo-logs
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - mongo_logs_data:/data/db
+
+  mongo_meta:
+    image: mongo:7
+    container_name: api-monitoring-mongo-meta
+    restart: unless-stopped
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - mongo_meta_data:/data/db
+
+  collector-service:
+    build:
+      context: ./collector-service
+    container_name: api-monitoring-collector
+    depends_on:
+      - mongo_logs
+      - mongo_meta
+    env_file:
+      - .env
+    ports:
+      - "${COLLECTOR_PORT:-8080}:8080"
+
+  dashboard:
+    build:
+      context: ./dashboard
+    container_name: api-monitoring-dashboard
+    depends_on:
+      - collector-service
+    env_file:
+      - .env
+    ports:
+      - "${DASHBOARD_PORT:-3000}:3000"
+
+  sample-service:
+    build:
+      context: ./sample-service
+    container_name: api-monitoring-sample
+    depends_on:
+      - collector-service
+    env_file:
+      - .env
+    ports:
+      - "${SAMPLE_SERVICE_PORT:-8090}:8080"
+
+volumes:
+  mongo_logs_data:
+  mongo_meta_data:

@@ -1,0 +1,40 @@
+server:
+  port: ${COLLECTOR_PORT:8080}
+
+spring:
+  application:
+    name: collector-service
+  main:
+    banner-mode: off
+  data:
+    mongodb:
+      auto-index-creation: true
+
+collector:
+  mongo:
+    logs:
+      uri: ${MONGO_LOGS_URI:mongodb://localhost:27017/logs}
+    metadata:
+      uri: ${MONGO_META_URI:mongodb://localhost:27017/meta}
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:development-secret-please-rotate-32-bytes}
+    issuer: collector-service
+    expiration: PT4H
+
+logging:
+  level:
+    root: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        collector.logs.ingest.duration: true

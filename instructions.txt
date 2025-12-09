@@ -1,0 +1,39 @@
+First terminal:
+1. $env:JWT_SECRET = "this-is-a-very-long-secret-key-123456"
+2. $env:MONGO_LOGS_URI = "mongodb://root:root@localhost:27017/logs?authSource=admin"
+3. $env:MONGO_META_URI = "mongodb://root:root@localhost:27018/meta?authSource=admin"
+4. $env:NEXT_PUBLIC_COLLECTOR_URL = "http://localhost:8080"
+{Run Docker Desktop}
+5. docker compose up -d mongo_logs mongo_meta
+6. .\gradlew.bat :collector-service:bootRun
+
+Second Terminal:
+1. cd dashboard
+2. npm run dev
+
+Third Terminal (repo root):
+1. docker exec -i api-monitoring-mongo-logs mongosh logs --quiet --eval 'db.api_logs.insertOne({ serviceName: "orders-service", endpoint: "/api/orders", method: "POST", statusCode: 200, latencyMs: 1400, rateLimitHit: false, requestSize: 512, responseSize: 256, timestamp: new Date(), meta: { scenario: "slow-path", notes: "Latency spike demo" } })'
+2. docker exec -i api-monitoring-mongo-logs mongosh logs --quiet --eval 'db.api_logs.insertOne({ serviceName: "orders-service", endpoint: "/api/orders", method: "POST", statusCode: 502, latencyMs: 340, rateLimitHit: false, requestSize: 480, responseSize: 210, timestamp: new Date(), meta: { scenario: "broken-endpoint", error: "Simulated downstream failure" } })'
+3. docker exec -i api-monitoring-mongo-logs mongosh logs --quiet --eval 'db.api_logs.insertOne({ serviceName: "orders-service", endpoint: "/api/orders", method: "POST", statusCode: 200, latencyMs: 75, rateLimitHit: true, requestSize: 300, responseSize: 180, timestamp: new Date(), meta: { scenario: "rate-limit", bucket: "orders" } })'
+4. docker exec -i api-monitoring-mongo-meta mongosh meta --quiet --eval 'db.alerts.updateOne({ _id: "orders-slow" }, { $set: { _id: "orders-slow", serviceName: "orders-service", endpoint: "/api/orders", severity: "HIGH", summary: "Slow endpoint detected", status: "ACTIVE", type: "LATENCY", createdAt: new Date(), updatedAt: new Date() } }, { upsert: true })'
+5. docker exec -i api-monitoring-mongo-meta mongosh meta --quiet --eval 'db.alerts.updateOne({ _id: "orders-broken" }, { $set: { _id: "orders-broken", serviceName: "orders-service", endpoint: "/api/orders", severity: "CRITICAL", summary: "Broken endpoint detected", status: "ACTIVE", type: "ERROR", createdAt: new Date(), updatedAt: new Date() } }, { upsert: true })'
+6. docker exec -i api-monitoring-mongo-meta mongosh meta --quiet --eval 'db.alerts.updateOne({ _id: "orders-rate-limit" }, { $set: { _id: "orders-rate-limit", serviceName: "orders-service", endpoint: "/api/orders", severity: "MEDIUM", summary: "Rate limit exceeded", status: "ACTIVE", type: "RATE_LIMIT", createdAt: new Date(), updatedAt: new Date() } }, { upsert: true })'
+7. .\scripts\dump-logs.ps1
+8. .\scripts\dump-alerts.ps1
+
+Browser walkthrough:
+1. Refresh http://localhost:3000 after the inserts finish.
+2. Log in with admin/admin if prompted, open the Overview cards, and call out the slow/broken/rate-limit tiles.
+3. Navigate to Alerts, show the new alert, resolve it, and demonstrate the Logs table filters.
+
+Wrap-up:
+1. Return to the original PowerShell window and run .\scripts\stop-all.ps1
+2. docker compose down mongo_logs mongo_meta
+3. Close any leftover terminals once everything stops.
+
+
+//Do not touch the below part
+docker exec -i api-monitoring-mongo-logs mongosh ... << script
+• 6755c5a0cafe000000000001 → latency 1400 ms (slow-path)
+• 6755c5a0cafe000000000002 → status 502 (broken-endpoint)
+• 6755c5a0cafe000000000003 → rateLimitHit true (rate-limit)
