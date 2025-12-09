@@ -43,6 +43,9 @@ dashboard/           # Next.js web application
 docker-compose.yml   # End-to-end orchestration
 ```
 
+![Dashboard Overview](docs/image/Screenshot%202025-12-09%20005926.png)
+![Alert Walkthrough](docs/image/Screenshot%202025-12-09%20005939.png)
+
 ## Milestone Status
 
 ### Milestone 1 – API Tracking Client
